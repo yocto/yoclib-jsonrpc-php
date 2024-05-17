@@ -4,7 +4,8 @@ This yocLibrary enables your project to encode and decode JSON-RPC messages in P
 
 ## Status
 
-[![CI](https://github.com/yocto/yoclib-jsonrpc-php/actions/workflows/ci.yml/badge.svg)](https://github.com/yocto/yoclib-jsonrpc-php/actions/workflows/ci.yml)
+[![PHP Composer](https://github.com/yocto/yoclib-jsonrpc-php/actions/workflows/php.yml/badge.svg)](https://github.com/yocto/yoclib-jsonrpc-php/actions/workflows/php.yml)
+[![codecov](https://codecov.io/gh/yocto/yoclib-jsonrpc-php/graph/badge.svg?token=CVJJGTZJ1X)](https://codecov.io/gh/yocto/yoclib-jsonrpc-php)
 
 ## Installation
 
