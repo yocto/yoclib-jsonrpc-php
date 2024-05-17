@@ -132,6 +132,50 @@ class MessageTest extends TestCase{
      * @return void
      * @throws JSONRPCException
      */
+    public function testParseRequestV1WithMethod(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] The "method" property in request MUST be a string.');
+
+        Message::parseObject((object) ['method'=>null]);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseRequestV1WithParams(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] Missing "method" property in request.');
+
+        Message::parseObject((object) ['params'=>null]);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseResponseV1WithResult(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] Missing "error" property in request.');
+
+        Message::parseObject((object) ['result'=>null]);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseResponseV1WithError(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] Missing "result" property in request.');
+
+        Message::parseObject((object) ['error'=>null]);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
     public function testParseVersion2(){
         $this->expectException(JSONRPCException::class);
         $this->expectExceptionMessage('[V2] Unknown message type.');
