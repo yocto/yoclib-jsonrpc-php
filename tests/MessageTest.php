@@ -349,6 +349,17 @@ class MessageTest extends TestCase{
      * @return void
      * @throws JSONRPCException
      */
+    public function testParseResponseV2WithResultAndError(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V2] Only one property "result" or "error" can be present.');
+
+        Message::parseObject((object) ['jsonrpc'=>'2.0','result'=>'abc','error'=>'def']);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
     public function testParseResponseV1WithResultNullAndErrorNumber(){
         $this->expectException(JSONRPCException::class);
         $this->expectExceptionMessage('[V1] The "error" property in request MUST be an string, object or null.');
@@ -382,11 +393,22 @@ class MessageTest extends TestCase{
      * @return void
      * @throws JSONRPCException
      */
+    public function testParseResponseV2WithResultNullAndErrorObjectCodeAndMessage(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V2] The "code" property of the error object MUST be an integer.');
+
+        Message::parseObject((object) ['jsonrpc'=>'2.0','error'=>(object) ['code'=>null,'message'=>null]]);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
     public function testParseResponseV2WithResultNullAndErrorObjectCodeNumber(){
         $this->expectException(JSONRPCException::class);
-        $this->expectExceptionMessage('[V2] The error object MUST have a "message" property.');
+        $this->expectExceptionMessage('[V2] The "message" property of the error object MUST be a string.');
 
-        Message::parseObject((object) ['jsonrpc'=>'2.0','error'=>(object) ['code'=>123]]);
+        Message::parseObject((object) ['jsonrpc'=>'2.0','error'=>(object) ['code'=>123,'message'=>null]]);
     }
 
     /**
