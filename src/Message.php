@@ -14,6 +14,14 @@ abstract class Message{
         $this->value = $value;
     }
 
+
+    /**
+     * @return string|null
+     */
+    public function getJSONRPC(): ?string{
+        return $this->hasJSONRPC()?$this->value->jsonrpc:null;
+    }
+
     /**
      * @param bool $strictId
      * @return mixed|null
@@ -69,6 +77,13 @@ abstract class Message{
      */
     public function getErrorData(){
         return $this->getError()->data ?? null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasJSONRPC(): bool{
+        return property_exists($this->value,'jsonrpc') && $this->value->jsonrpc!==null;
     }
 
     /**
@@ -129,6 +144,10 @@ abstract class Message{
         return property_exists($this->value,'result') || property_exists($this->value,'error');
     }
 
+    public function isVersion2(): bool{
+        return $this->getJSONRPC()==='2.0';
+    }
+
     /**
      * @return object
      */
@@ -151,6 +170,28 @@ abstract class Message{
     }
 
     /**
+     * @param $id
+     * @param string $method
+     * @param object|array|null $params
+     * @return RequestMessage
+     * @throws JSONRPCException
+     */
+    public static function createRequestMessageV2($id,string $method,$params=null): RequestMessage{
+        $arr = [
+            'jsonrpc' => '2.0',
+            'id' => $id,
+            'method' => $method,
+        ];
+
+        if(is_object($params) || is_array($params)){
+            $arr['params'] = $params;
+        }elseif(!is_null($params)){
+            throw new JSONRPCException('[V2] The "params" property in request MUST be an object, array or null.');
+        }
+        return new RequestMessage((object) $arr);
+    }
+
+    /**
      * @param string $method
      * @param array $params
      * @return NotificationMessage
@@ -161,6 +202,26 @@ abstract class Message{
             'method' => $method,
             'params' => $params,
         ]);
+    }
+
+    /**
+     * @param string $method
+     * @param object|array|null $params
+     * @return NotificationMessage
+     * @throws JSONRPCException
+     */
+    public static function createNotificationMessageV2(string $method,$params=null): NotificationMessage{
+        $arr = [
+            'jsonrpc' => '2.0',
+            'method' => $method,
+        ];
+
+        if(is_object($params) || is_array($params)){
+            $arr['params'] = $params;
+        }elseif(!is_null($params)){
+            throw new JSONRPCException('[V2] The "params" property in request MUST be an object, array or null.');
+        }
+        return new NotificationMessage((object) $arr);
     }
 
     /**
@@ -182,6 +243,32 @@ abstract class Message{
             'result' => $result,
             'error' => $error,
         ]);
+    }
+
+    /**
+     * @param $id
+     * @param $result
+     * @param object|string|null $error
+     * @return RequestMessage
+     * @throws JSONRPCException
+     */
+    public static function createResponseMessageV2($id,$result=null,$error=null): RequestMessage{
+        if(!is_null($result) && !is_null($error)){
+            throw new JSONRPCException('[V2] Only one property "result" or "error" can be non null.');
+        }
+        if(!is_object($error) && !is_null($error)){
+            throw new JSONRPCException('[V1] The "error" property in request MUST be an object or null.');
+        }
+        $arr = [
+            'jsonrpc' => '2.0',
+            'id' => $id,
+        ];
+        if(!is_null($error)){
+            $arr['error'] = $error;
+        }else{
+            $arr['result'] = $result;
+        }
+        return new RequestMessage((object) $arr);
     }
 
     /**

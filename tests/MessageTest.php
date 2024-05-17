@@ -398,6 +398,21 @@ class MessageTest extends TestCase{
      * @return void
      * @throws JSONRPCException
      */
+    public function testIsVersion2(){
+        $this->assertFalse(Message::createRequestMessageV1(123,'myMethod')->isVersion2());
+        $this->assertTrue(Message::createRequestMessageV2(123,'myMethod')->isVersion2());
+
+        $this->assertFalse(Message::createNotificationMessageV1('myMethod')->isVersion2());
+        $this->assertTrue(Message::createNotificationMessageV2('myMethod')->isVersion2());
+
+        $this->assertFalse(Message::createResponseMessageV1(123,'myMethod')->isVersion2());
+        $this->assertTrue(Message::createResponseMessageV2(123,'myMethod')->isVersion2());
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
     public function testCreateResponseMessageV1WithResultAndError(){
         $this->expectException(JSONRPCException::class);
         $this->expectExceptionMessage('[V1] Only one property "result" or "error" can be non null.');
