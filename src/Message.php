@@ -148,15 +148,46 @@ abstract class Message{
     /**
      * @param object $message
      * @param bool $strictId
-     * @return null
+     * @return Message
      * @throws JSONRPCException
      */
     private static function handleMessageV2(object $message,bool $strictId=true){
         if(self::isRequestMessage($message)){
             self::validateMethodProperty($message);
-            return null;
+            if(property_exists($message,'params') && !is_array($message->params) && !is_object($message->params)){
+                throw new JSONRPCException('[V2] The "params" property MUST be an array or object if present.');
+            }
+            if(property_exists($message,'id') && !is_string($message->id) && !is_numeric($message->id) && !is_null($message->id)){
+                throw new JSONRPCException('[V2] The "params" property MUST be an string, number or null if present.');
+            }
+            if(property_exists($message,'id') && ($strictId?($message->id!==null):($message->id))){
+                return new RequestMessage($message);
+            }else{
+                return new NotificationMessage($message);
+            }
         }elseif(self::isResponseMessage($message)){
-            return null;
+            if(property_exists($message,'result') && property_exists($message,'error')){
+                throw new JSONRPCException('[V2] Only one property "result" or "error" can be present.');
+            }
+            if(property_exists($message,'error')){
+                if(!property_exists($message->error,'code')){
+                    throw new JSONRPCException('[V2] The error object MUST have a "code" property.');
+                }
+                if(!property_exists($message->error,'message')){
+                    throw new JSONRPCException('[V2] The error object MUST have a "message" property.');
+                }
+                if(!is_int($message->error->code)){
+                    throw new JSONRPCException('[V2] The "code" property of the error object MUST be an integer.');
+                }
+                if(!is_string($message->error->message)){
+                    throw new JSONRPCException('[V2] The "message" property of the error object MUST be a string.');
+                }
+            }
+            if(property_exists($message,'id')){
+                return new ResponseMessage($message);
+            }else{
+                throw new JSONRPCException('[V2] Missing "id" property in response.');
+            }
         }else{
             throw new JSONRPCException('[V2] Unknown message type.');
         }
