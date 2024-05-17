@@ -5,6 +5,8 @@ use PHPUnit\Framework\TestCase;
 
 use YOCLIB\JSONRPC\JSONRPCException;
 use YOCLIB\JSONRPC\Message;
+use YOCLIB\JSONRPC\NotificationMessage;
+use YOCLIB\JSONRPC\RequestMessage;
 use YOCLIB\JSONRPC\ResponseMessage;
 
 class MessageTest extends TestCase{
@@ -144,11 +146,59 @@ class MessageTest extends TestCase{
      * @return void
      * @throws JSONRPCException
      */
+    public function testParseRequestV1WithMethodString(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] Missing "params" property in request.');
+
+        Message::parseObject((object) ['method'=>'abc']);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
     public function testParseRequestV1WithParams(){
         $this->expectException(JSONRPCException::class);
         $this->expectExceptionMessage('[V1] Missing "method" property in request.');
 
         Message::parseObject((object) ['params'=>null]);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseRequestV1WithMethodStringAndParams(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] The "params" property in request MUST be an array.');
+
+        Message::parseObject((object) ['method'=>'abc','params'=>null]);
+    }
+
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseRequestV1WithMethodStringAndParamsArray(){
+        $this->assertInstanceOf(NotificationMessage::class,Message::parseObject((object) ['method'=>'abc','params'=>[]]));
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseRequestV1WithIdNullAndMethodStringAndParamsArray(){
+        $this->assertInstanceOf(NotificationMessage::class,Message::parseObject((object) ['id'=>null,'method'=>'abc','params'=>[]]));
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseRequestV1WithIdFalsyAndMethodStringAndParamsArray(){
+        $this->assertInstanceOf(RequestMessage::class,Message::parseObject((object) ['id'=>false,'method'=>'abc','params'=>[]]));
+        $this->assertInstanceOf(NotificationMessage::class,Message::parseObject((object) ['id'=>false,'method'=>'abc','params'=>[]],false));
     }
 
     /**
@@ -217,6 +267,7 @@ class MessageTest extends TestCase{
      */
     public function testParseResponseV1WithIdFalsyAndResultAndNullError(){
         $this->assertInstanceOf(ResponseMessage::class,Message::parseObject((object) ['id'=>false,'result'=>'abc','error'=>null]));
+        $this->assertInstanceOf(ResponseMessage::class,Message::parseObject((object) ['id'=>false,'result'=>'abc','error'=>null],false));
     }
 
     /**

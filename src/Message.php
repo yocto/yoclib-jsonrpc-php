@@ -194,7 +194,7 @@ abstract class Message{
         if(!property_exists($message,'params')){
             throw new JSONRPCException('[V1] Missing "params" property in request.');
         }
-        if(!is_array($message['params'])){
+        if(!is_array($message->params)){
             throw new JSONRPCException('[V1] The "params" property in request MUST be an array.');
         }
     }
@@ -235,7 +235,7 @@ abstract class Message{
             self::validateMethodPropertyV1($message);
             self::validateParamsPropertyV1($message);
 
-            if(property_exists($message,'id') && $strictId?($message->id!==null):($message->id)){
+            if(property_exists($message,'id') && ($strictId?($message->id!==null):($message->id))){
                 return new RequestMessage($message);
             }else{
                 return new NotificationMessage($message);
