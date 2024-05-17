@@ -248,22 +248,34 @@ abstract class Message{
     /**
      * @param $id
      * @param $result
-     * @param object|string|null $error
+     * @param object|null $error
      * @return RequestMessage
      * @throws JSONRPCException
      */
-    public static function createResponseMessageV2($id,$result=null,$error=null): RequestMessage{
+    public static function createResponseMessageV2($id,$result=null,?object $error=null): RequestMessage{
         if(!is_null($result) && !is_null($error)){
             throw new JSONRPCException('[V2] Only one property "result" or "error" can be non null.');
         }
         if(!is_object($error) && !is_null($error)){
-            throw new JSONRPCException('[V1] The "error" property in request MUST be an object or null.');
+            throw new JSONRPCException('[V2] The "error" property in request MUST be an object or null.');
         }
         $arr = [
             'jsonrpc' => '2.0',
             'id' => $id,
         ];
         if(!is_null($error)){
+            if(!property_exists($error,'code')){
+                throw new JSONRPCException('[V2] The error object MUST have a "code" property.');
+            }
+            if(!property_exists($error,'message')){
+                throw new JSONRPCException('[V2] The error object MUST have a "message" property.');
+            }
+            if(!is_int($error->code)){
+                throw new JSONRPCException('[V2] The "code" property of the error object MUST be an integer.');
+            }
+            if(!is_string($error->message)){
+                throw new JSONRPCException('[V2] The "message" property of the error object MUST be a string.');
+            }
             $arr['error'] = $error;
         }else{
             $arr['result'] = $result;

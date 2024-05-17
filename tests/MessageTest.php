@@ -413,6 +413,17 @@ class MessageTest extends TestCase{
      * @return void
      * @throws JSONRPCException
      */
+    public function testCreateRequestMessageV2WithIdAndMethodAndParamsFalse(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V2] The "params" property in request MUST be an object, array or null.');
+
+        Message::createRequestMessageV2(123,'abc',false);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
     public function testCreateResponseMessageV1WithResultAndError(){
         $this->expectException(JSONRPCException::class);
         $this->expectExceptionMessage('[V1] Only one property "result" or "error" can be non null.');
@@ -429,6 +440,18 @@ class MessageTest extends TestCase{
         $this->expectExceptionMessage('[V1] The "error" property in request MUST be an string, object or null.');
 
         Message::createResponseMessageV1(123,null,false);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testCreateRequestOrNotificationV2(){
+        $this->assertInstanceOf(RequestMessage::class,Message::createRequestMessageV2(123,'myMethod',[]));
+        $this->assertInstanceOf(RequestMessage::class,Message::createRequestMessageV2(123,'myMethod',(object) []));
+
+        $this->assertInstanceOf(NotificationMessage::class,Message::createNotificationMessageV2('myMethod',[]));
+        $this->assertInstanceOf(NotificationMessage::class,Message::createNotificationMessageV2('myMethod',(object) []));
     }
 
     public function testToObject(){
