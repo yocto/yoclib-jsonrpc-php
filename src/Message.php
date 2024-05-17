@@ -15,10 +15,10 @@ abstract class Message{
     }
 
     /**
-     * @return string
+     * @return object
      */
-    public function toJSON(): string{
-        return json_encode($this->value);
+    public function toObject(): object{
+        return $this->value;
     }
 
     /**
@@ -71,25 +71,50 @@ abstract class Message{
     }
 
     /**
-     * @param string $json
-     * @param bool $strictId
-     * @return Message[]|array|Message
+     * @param $object
+     * @return bool
+     */
+    public static function isBatch($object): bool{
+        return is_array($object);
+    }
+
+    /**
+     * @param $object
+     * @return false|string
      * @throws JSONRPCException
      */
-    public static function parse(string $json,bool $strictId=true){
+    public static function encodeJSON($object){
         try{
-            $message = json_decode($json,false,512,JSON_THROW_ON_ERROR);
+            return json_encode($object,JSON_THROW_ON_ERROR);
         }catch(JsonException $e){
-            throw new JSONRPCException('[V1] Failed to decode JSON.');
+            throw new JSONRPCException('Failed to encode JSON.');
         }
-        if(is_array($message)){
-            $messages = [];
-            foreach($message AS $msg){
-                $messages[] = self::handleMessage($msg,$strictId);
-            }
-            return $messages;
+    }
+
+    /**
+     * @param string $json
+     * @return mixed
+     * @throws JSONRPCException
+     */
+    public static function decodeJSON(string $json){
+        try{
+            return json_decode($json,false,512,JSON_THROW_ON_ERROR);
+        }catch(JsonException $e){
+            throw new JSONRPCException('Failed to decode JSON.');
         }
-        return self::handleMessage($message,$strictId);
+    }
+
+    /**
+     * @param $object
+     * @param bool $strictId
+     * @return Message
+     * @throws JSONRPCException
+     */
+    public static function parseObject($object,bool $strictId=true){
+        if(is_object($object)){
+            return self::handleMessage($object,$strictId);
+        }
+        throw new JSONRPCException('A message MUST be a JSON object.');
     }
 
     /**
@@ -99,23 +124,38 @@ abstract class Message{
      * @throws JSONRPCException
      */
     private static function handleMessage($message,bool $strictId=true){
-        if(isset($message['jsonrpc']) && $message['jsonrpc']==='2.0'){
-            return self::handleMessageV2($message,$strictId);
+        if(property_exists($message,'jsonrpc')){
+            if($message->jsonrpc==='2.0'){
+                return self::handleMessageV2($message,$strictId);
+            }
+            throw new JSONRPCException('Unknown version "'.($message->jsonrpc).'".');
         }else{
             return self::handleMessageV1($message,$strictId);
         }
     }
 
+    /**
+     * @param $message
+     * @param bool $strictId
+     * @return null
+     * @throws JSONRPCException
+     */
     private static function handleMessageV2($message,bool $strictId=true){
-        return null;
+        if(self::isRequest($message)){
+            return null;
+        }elseif(self::isResponse($message)){
+            return null;
+        }else{
+            throw new JSONRPCException('[V2] Unknown message type.');
+        }
     }
 
 
-    private static function isRequestV1($message): bool{
+    private static function isRequest($message): bool{
         return property_exists($message,'method') || property_exists($message,'params');
     }
 
-    private static function isResponseV1($message): bool{
+    private static function isResponse($message): bool{
         return property_exists($message,'result') || property_exists($message,'error');
     }
 
@@ -179,7 +219,7 @@ abstract class Message{
      * @throws JSONRPCException
      */
     private static function handleMessageV1($message,bool $strictId=true){
-        if(self::isRequestV1($message)){
+        if(self::isRequest($message)){
             self::validateMethodPropertyV1($message);
             self::validateParamsPropertyV1($message);
 
@@ -188,7 +228,7 @@ abstract class Message{
             }else{
                 return new NotificationMessage($message);
             }
-        }elseif(self::isResponseV1($message)){
+        }elseif(self::isResponse($message)){
             self::validateResultPropertyV1($message);
             self::validateErrorPropertyV1($message);
             if(!is_null($message->result) && !is_null($message->error)){
