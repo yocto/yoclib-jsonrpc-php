@@ -5,6 +5,7 @@ use PHPUnit\Framework\TestCase;
 
 use YOCLIB\JSONRPC\JSONRPCException;
 use YOCLIB\JSONRPC\Message;
+use YOCLIB\JSONRPC\ResponseMessage;
 
 class MessageTest extends TestCase{
 
@@ -170,6 +171,52 @@ class MessageTest extends TestCase{
         $this->expectExceptionMessage('[V1] Missing "result" property in request.');
 
         Message::parseObject((object) ['error'=>null]);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseResponseV1WithResultAndError(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] Only one property "result" or "error" can be non null.');
+
+        Message::parseObject((object) ['result'=>'abc','error'=>'def']);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseResponseV1WithResultAndNullError(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] Missing "id" property in response.');
+
+        Message::parseObject((object) ['result'=>'abc','error'=>null]);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseResponseV1WithIdAndResultAndNullError(){
+        $this->assertInstanceOf(ResponseMessage::class,Message::parseObject((object) ['id'=>123,'result'=>'abc','error'=>null]));
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseResponseV1WithIdNullAndResultAndNullError(){
+        $this->assertInstanceOf(ResponseMessage::class,Message::parseObject((object) ['id'=>null,'result'=>'abc','error'=>null]));
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testParseResponseV1WithIdFalsyAndResultAndNullError(){
+        $this->assertInstanceOf(ResponseMessage::class,Message::parseObject((object) ['id'=>false,'result'=>'abc','error'=>null]));
     }
 
     /**

@@ -14,6 +14,18 @@ abstract class Message{
         $this->value = $value;
     }
 
+    public function isRequest(): bool{
+        return property_exists($this->value,'method') || property_exists($this->value,'params');
+    }
+
+    public function isNotification($strictId=true): bool{
+        return $this->isRequest() && (!property_exists($this->value,'id') || !($strictId?($this->value->id!==null):($this->value->id)));
+    }
+
+    public function isResponse(): bool{
+        return property_exists($this->value,'result') || property_exists($this->value,'error');
+    }
+
     /**
      * @return object
      */
@@ -141,9 +153,9 @@ abstract class Message{
      * @throws JSONRPCException
      */
     private static function handleMessageV2($message,bool $strictId=true){
-        if(self::isRequest($message)){
+        if(self::isRequestMessage($message)){
             return null;
-        }elseif(self::isResponse($message)){
+        }elseif(self::isResponseMessage($message)){
             return null;
         }else{
             throw new JSONRPCException('[V2] Unknown message type.');
@@ -151,11 +163,11 @@ abstract class Message{
     }
 
 
-    private static function isRequest($message): bool{
+    private static function isRequestMessage($message): bool{
         return property_exists($message,'method') || property_exists($message,'params');
     }
 
-    private static function isResponse($message): bool{
+    private static function isResponseMessage($message): bool{
         return property_exists($message,'result') || property_exists($message,'error');
     }
 
@@ -219,7 +231,7 @@ abstract class Message{
      * @throws JSONRPCException
      */
     private static function handleMessageV1($message,bool $strictId=true){
-        if(self::isRequest($message)){
+        if(self::isRequestMessage($message)){
             self::validateMethodPropertyV1($message);
             self::validateParamsPropertyV1($message);
 
@@ -228,7 +240,7 @@ abstract class Message{
             }else{
                 return new NotificationMessage($message);
             }
-        }elseif(self::isResponse($message)){
+        }elseif(self::isResponseMessage($message)){
             self::validateResultPropertyV1($message);
             self::validateErrorPropertyV1($message);
             if(!is_null($message->result) && !is_null($message->error)){
