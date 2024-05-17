@@ -31,6 +31,6 @@
 		}
 	},
 	"scripts": {
-		"test": "phpunit --coverage-text ."
+		"test": "phpunit --coverage-clover coverage.xml ."
 	}
 }
