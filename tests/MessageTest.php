@@ -346,6 +346,28 @@ class MessageTest extends TestCase{
      * @return void
      * @throws JSONRPCException
      */
+    public function testGetters(){
+        $this->assertEquals(123,Message::createRequestMessageV1(123,'myMethod')->getId());
+        $this->assertEquals('myMethod',Message::createRequestMessageV1(123,'myMethod')->getMethod());
+        $this->assertEquals([],Message::createRequestMessageV1(123,'myMethod')->getParams());
+
+        $this->assertNull(Message::createNotificationMessageV1('myMethod')->getId());
+        $this->assertEquals('myMethod',Message::createNotificationMessageV1('myMethod')->getMethod());
+        $this->assertEquals([],Message::createNotificationMessageV1('myMethod')->getParams());
+
+        $this->assertEquals(123,Message::createResponseMessageV1(123,'myResult')->getId());
+        $this->assertEquals('myResult',Message::createResponseMessageV1(123,'myResult')->getResult());
+        $this->assertNull(Message::createResponseMessageV1(123,'myResult')->getError());
+
+        $this->assertEquals(456,Message::createResponseMessageV1(123,null,(object) ['code'=>456,'message'=>'Some error text','data'=>true])->getErrorCode());
+        $this->assertEquals('Some error text',Message::createResponseMessageV1(123,null,(object) ['code'=>456,'message'=>'Some error text','data'=>true])->getErrorMessage());
+        $this->assertTrue(Message::createResponseMessageV1(123,null,(object) ['code'=>456,'message'=>'Some error text','data'=>true])->getErrorData());
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
     public function testIsRequest(){
         $this->assertTrue(Message::createRequestMessageV1(123,'myMethod')->isRequest());
         $this->assertTrue(Message::createNotificationMessageV1('myMethod')->isRequest());

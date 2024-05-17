@@ -83,28 +83,28 @@ abstract class Message{
      * @return bool
      */
     public function hasMethod(): bool{
-        return property_exists($this->value,'method') && $this->value->method!=null;
+        return property_exists($this->value,'method') && $this->value->method!==null;
     }
 
     /**
      * @return bool
      */
     public function hasParams(): bool{
-        return property_exists($this->value,'params') && $this->value->params!=null;
+        return property_exists($this->value,'params') && $this->value->params!==null;
     }
 
     /**
      * @return bool
      */
     public function hasResult(): bool{
-        return property_exists($this->value,'result') && $this->value->result!=null;
+        return property_exists($this->value,'result') && $this->value->result!==null;
     }
 
     /**
      * @return bool
      */
     public function hasError(): bool{
-        return property_exists($this->value,'error') && $this->value->error!=null;
+        return property_exists($this->value,'error') && $this->value->error!==null;
     }
 
     /**
