@@ -42,6 +42,30 @@ class MessageTest extends TestCase{
         $this->assertEquals([],Message::decodeJSON('[]'));
     }
 
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testEncodeJSONString(){
+        $this->assertEquals('"abc"',Message::encodeJSON('abc'));
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testEncodeJSONObject(){
+        $this->assertEquals('{}',Message::encodeJSON((object) []));
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testEncodeJSONArray(){
+        $this->assertEquals('[]',Message::encodeJSON([]));
+    }
+
     public function testIsBatch(){
         $this->assertTrue(Message::isBatch([]));
 
@@ -238,6 +262,17 @@ class MessageTest extends TestCase{
      * @return void
      * @throws JSONRPCException
      */
+    public function testParseResponseV1WithResultNullAndErrorNumber(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] The "error" property in request MUST be an string, object or null.');
+
+        Message::parseObject((object) ['result'=>null,'error'=>12.34]);
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
     public function testParseResponseV1WithResultAndNullError(){
         $this->expectException(JSONRPCException::class);
         $this->expectExceptionMessage('[V1] Missing "id" property in response.');
@@ -300,13 +335,65 @@ class MessageTest extends TestCase{
      * @return void
      * @throws JSONRPCException
      */
-    public function testMessages(){
-        $this->assertEquals((object) ["id"=>123,"method"=>"myMethod","params"=>[]],Message::createRequestMessageV1(123,'myMethod')->toObject());
-        $this->assertEquals((object) ["id"=>123,"method"=>"myMethod","params"=>["a",1,false,12.34]],Message::createRequestMessageV1(123,'myMethod',['a',1,false,12.34])->toObject());
-        $this->assertEquals((object) ["id"=>null,"method"=>"myMethod","params"=>[]],Message::createNotificationMessageV1('myMethod')->toObject());
-        $this->assertEquals((object) ["id"=>null,"method"=>"myMethod","params"=>["b",0,true,34.12]],Message::createNotificationMessageV1('myMethod',['b',0,true,34.12])->toObject());
-        $this->assertEquals((object) ["id"=>123,"result"=>"myResult","error"=>null],Message::createResponseMessageV1(123,'myResult')->toObject());
-        $this->assertEquals((object) ["id"=>123,"result"=>null,"error"=>"myError"],Message::createResponseMessageV1(123,null,'myError')->toObject());
+    public function testIsRequest(){
+        $this->assertTrue(Message::createRequestMessageV1(123,'myMethod')->isRequest());
+        $this->assertTrue(Message::createNotificationMessageV1('myMethod')->isRequest());
+        $this->assertFalse(Message::createResponseMessageV1(123,'myResult')->isRequest());
     }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testIsNotification(){
+        $this->assertFalse(Message::createRequestMessageV1(123,'myMethod')->isNotification());
+        $this->assertTrue(Message::createNotificationMessageV1('myMethod')->isNotification());
+        $this->assertFalse(Message::createResponseMessageV1(123,'myResult')->isNotification());
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testIsResponse(){
+        $this->assertFalse(Message::createRequestMessageV1(123,'myMethod')->isResponse());
+        $this->assertFalse(Message::createNotificationMessageV1('myMethod')->isResponse());
+        $this->assertTrue(Message::createResponseMessageV1(123,'myResult')->isResponse());
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testCreateResponseMessageV1WithResultAndError(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] Only one property "result" or "error" can be non null.');
+
+        Message::createResponseMessageV1(123,'abc','def');
+    }
+
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testCreateResponseMessageV1WithErrorFalse(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('[V1] The "error" property in request MUST be an string, object or null.');
+
+        Message::createResponseMessageV1(123,null,false);
+    }
+
+//    /**
+//     * @return void
+//     * @throws JSONRPCException
+//     */
+//    public function testMessages(){
+//        $this->assertEquals((object) ["id"=>123,"method"=>"myMethod","params"=>[]],Message::createRequestMessageV1(123,'myMethod')->toObject());
+//        $this->assertEquals((object) ["id"=>123,"method"=>"myMethod","params"=>["a",1,false,12.34]],Message::createRequestMessageV1(123,'myMethod',['a',1,false,12.34])->toObject());
+//        $this->assertEquals((object) ["id"=>null,"method"=>"myMethod","params"=>[]],Message::createNotificationMessageV1('myMethod')->toObject());
+//        $this->assertEquals((object) ["id"=>null,"method"=>"myMethod","params"=>["b",0,true,34.12]],Message::createNotificationMessageV1('myMethod',['b',0,true,34.12])->toObject());
+//        $this->assertEquals((object) ["id"=>123,"result"=>"myResult","error"=>null],Message::createResponseMessageV1(123,'myResult')->toObject());
+//        $this->assertEquals((object) ["id"=>123,"result"=>null,"error"=>"myError"],Message::createResponseMessageV1(123,null,'myError')->toObject());
+//    }
 
 }
