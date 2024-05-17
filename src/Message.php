@@ -228,17 +228,17 @@ abstract class Message{
      * @param $id
      * @param $result
      * @param object|string|null $error
-     * @return RequestMessage
+     * @return ResponseMessage
      * @throws JSONRPCException
      */
-    public static function createResponseMessageV1($id,$result=null,$error=null): RequestMessage{
+    public static function createResponseMessageV1($id,$result=null,$error=null): ResponseMessage{
         if(!is_null($result) && !is_null($error)){
             throw new JSONRPCException('[V1] Only one property "result" or "error" can be non null.');
         }
         if(!is_object($error) && !is_string($error) && !is_null($error)){
             throw new JSONRPCException('[V1] The "error" property in request MUST be an string, object or null.');
         }
-        return new RequestMessage((object) [
+        return new ResponseMessage((object) [
             'id' => $id,
             'result' => $result,
             'error' => $error,
@@ -249,15 +249,12 @@ abstract class Message{
      * @param $id
      * @param $result
      * @param object|null $error
-     * @return RequestMessage
+     * @return ResponseMessage
      * @throws JSONRPCException
      */
-    public static function createResponseMessageV2($id,$result=null,?object $error=null): RequestMessage{
+    public static function createResponseMessageV2($id,$result=null,?object $error=null): ResponseMessage{
         if(!is_null($result) && !is_null($error)){
             throw new JSONRPCException('[V2] Only one property "result" or "error" can be non null.');
-        }
-        if(!is_object($error) && !is_null($error)){
-            throw new JSONRPCException('[V2] The "error" property in request MUST be an object or null.');
         }
         $arr = [
             'jsonrpc' => '2.0',
@@ -280,7 +277,7 @@ abstract class Message{
         }else{
             $arr['result'] = $result;
         }
-        return new RequestMessage((object) $arr);
+        return new ResponseMessage((object) $arr);
     }
 
     /**
