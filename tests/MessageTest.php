@@ -66,6 +66,17 @@ class MessageTest extends TestCase{
         $this->assertEquals('[]',Message::encodeJSON([]));
     }
 
+    /**
+     * @return void
+     * @throws JSONRPCException
+     */
+    public function testEncodeJSONResource(){
+        $this->expectException(JSONRPCException::class);
+        $this->expectExceptionMessage('Failed to encode JSON.');
+
+        Message::encodeJSON(tmpfile());
+    }
+
     public function testIsBatch(){
         $this->assertTrue(Message::isBatch([]));
 
@@ -161,7 +172,7 @@ class MessageTest extends TestCase{
      */
     public function testParseRequestV1WithMethod(){
         $this->expectException(JSONRPCException::class);
-        $this->expectExceptionMessage('[V1] The "method" property in request MUST be a string.');
+        $this->expectExceptionMessage('The "method" property in request MUST be a string.');
 
         Message::parseObject((object) ['method'=>null]);
     }
@@ -183,7 +194,7 @@ class MessageTest extends TestCase{
      */
     public function testParseRequestV1WithParams(){
         $this->expectException(JSONRPCException::class);
-        $this->expectExceptionMessage('[V1] Missing "method" property in request.');
+        $this->expectExceptionMessage('Missing "method" property in request.');
 
         Message::parseObject((object) ['params'=>null]);
     }
@@ -381,6 +392,10 @@ class MessageTest extends TestCase{
         $this->expectExceptionMessage('[V1] The "error" property in request MUST be an string, object or null.');
 
         Message::createResponseMessageV1(123,null,false);
+    }
+
+    public function testToObject(){
+        $this->assertEquals((object) ['id'=>123,'method'=>'getMethod','params'=>['param1','param2']],Message::createRequestMessageV1(123,'getMethod',['param1','param2'])->toObject());
     }
 
 //    /**

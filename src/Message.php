@@ -153,7 +153,7 @@ abstract class Message{
      */
     private static function handleMessageV2(object $message,bool $strictId=true){
         if(self::isRequestMessage($message)){
-            self::validateMethodPropertyV1($message);
+            self::validateMethodProperty($message);
             return null;
         }elseif(self::isResponseMessage($message)){
             return null;
@@ -184,12 +184,12 @@ abstract class Message{
      * @return void
      * @throws JSONRPCException
      */
-    private static function validateMethodPropertyV1(object $message){
+    private static function validateMethodProperty(object $message){
         if(!property_exists($message,'method')){
-            throw new JSONRPCException('[V1] Missing "method" property in request.');
+            throw new JSONRPCException('Missing "method" property in request.');
         }
         if(!is_string($message->method)){
-            throw new JSONRPCException('[V1] The "method" property in request MUST be a string.');
+            throw new JSONRPCException('The "method" property in request MUST be a string.');
         }
     }
 
@@ -240,7 +240,7 @@ abstract class Message{
      */
     private static function handleMessageV1(object $message,bool $strictId=true){
         if(self::isRequestMessage($message)){
-            self::validateMethodPropertyV1($message);
+            self::validateMethodProperty($message);
             self::validateParamsPropertyV1($message);
 
             if(property_exists($message,'id') && ($strictId?($message->id!==null):($message->id))){
