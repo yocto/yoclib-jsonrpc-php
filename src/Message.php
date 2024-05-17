@@ -14,14 +14,117 @@ abstract class Message{
         $this->value = $value;
     }
 
+    /**
+     * @param bool $strictId
+     * @return mixed|null
+     */
+    public function getId(bool $strictId=true){
+        return $this->hasId($strictId)?$this->value->id:null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMethod(): ?string{
+        return $this->hasMethod()?$this->value->method:null;
+    }
+
+    /**
+     * @return array|object|null
+     */
+    public function getParams(){
+        return $this->hasParams()?$this->value->params:null;
+    }
+
+    /**
+     * @return mixed|null
+     */
+    public function getResult(){
+        return $this->hasResult()?$this->value->result:null;
+    }
+
+    /**
+     * @return object|string|null
+     */
+    public function getError(){
+        return $this->hasError()?$this->value->error:null;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getErrorCode(): ?int{
+        return $this->getError()->code ?? null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getErrorMessage(): ?string{
+        return $this->getError()->message ?? null;
+    }
+
+    /**
+     * @return mixed|null
+     */
+    public function getErrorData(){
+        return $this->getError()->data ?? null;
+    }
+
+    /**
+     * @param bool $strictId
+     * @return bool
+     */
+    public function hasId(bool $strictId=true): bool{
+        return property_exists($this->value,'id') && ($strictId?($this->value->id!==null):($this->value->id));
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasMethod(): bool{
+        return property_exists($this->value,'method') && $this->value->method!=null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasParams(): bool{
+        return property_exists($this->value,'params') && $this->value->params!=null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasResult(): bool{
+        return property_exists($this->value,'result') && $this->value->result!=null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasError(): bool{
+        return property_exists($this->value,'error') && $this->value->error!=null;
+    }
+
+    /**
+     * @return bool
+     */
     public function isRequest(): bool{
         return property_exists($this->value,'method') || property_exists($this->value,'params');
     }
 
+    /**
+     * @param bool $strictId
+     * @return bool
+     */
     public function isNotification(bool $strictId=true): bool{
         return $this->isRequest() && (!property_exists($this->value,'id') || !($strictId?($this->value->id!==null):($this->value->id)));
     }
 
+    /**
+     * @return bool
+     */
     public function isResponse(): bool{
         return property_exists($this->value,'result') || property_exists($this->value,'error');
     }
