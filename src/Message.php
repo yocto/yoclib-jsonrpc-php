@@ -18,7 +18,7 @@ abstract class Message{
         return property_exists($this->value,'method') || property_exists($this->value,'params');
     }
 
-    public function isNotification($strictId=true): bool{
+    public function isNotification(bool $strictId=true): bool{
         return $this->isRequest() && (!property_exists($this->value,'id') || !($strictId?($this->value->id!==null):($this->value->id)));
     }
 
@@ -48,7 +48,6 @@ abstract class Message{
     }
 
     /**
-     * @param $id
      * @param string $method
      * @param array $params
      * @return NotificationMessage
@@ -117,7 +116,7 @@ abstract class Message{
     }
 
     /**
-     * @param $object
+     * @param mixed $object
      * @param bool $strictId
      * @return Message
      * @throws JSONRPCException
@@ -130,12 +129,12 @@ abstract class Message{
     }
 
     /**
-     * @param $message
+     * @param object $message
      * @param bool $strictId
      * @return Message
      * @throws JSONRPCException
      */
-    private static function handleMessage($message,bool $strictId=true){
+    private static function handleMessage(object $message,bool $strictId=true){
         if(property_exists($message,'jsonrpc')){
             if($message->jsonrpc==='2.0'){
                 return self::handleMessageV2($message,$strictId);
@@ -147,13 +146,14 @@ abstract class Message{
     }
 
     /**
-     * @param $message
+     * @param object $message
      * @param bool $strictId
      * @return null
      * @throws JSONRPCException
      */
-    private static function handleMessageV2($message,bool $strictId=true){
+    private static function handleMessageV2(object $message,bool $strictId=true){
         if(self::isRequestMessage($message)){
+            self::validateMethodPropertyV1($message);
             return null;
         }elseif(self::isResponseMessage($message)){
             return null;
@@ -163,11 +163,19 @@ abstract class Message{
     }
 
 
-    private static function isRequestMessage($message): bool{
+    /**
+     * @param object $message
+     * @return bool
+     */
+    private static function isRequestMessage(object $message): bool{
         return property_exists($message,'method') || property_exists($message,'params');
     }
 
-    private static function isResponseMessage($message): bool{
+    /**
+     * @param object $message
+     * @return bool
+     */
+    private static function isResponseMessage(object $message): bool{
         return property_exists($message,'result') || property_exists($message,'error');
     }
 
@@ -186,11 +194,11 @@ abstract class Message{
     }
 
     /**
-     * @param $message
+     * @param object $message
      * @return void
      * @throws JSONRPCException
      */
-    private static function validateParamsPropertyV1($message){
+    private static function validateParamsPropertyV1(object $message){
         if(!property_exists($message,'params')){
             throw new JSONRPCException('[V1] Missing "params" property in request.');
         }
@@ -200,22 +208,22 @@ abstract class Message{
     }
 
     /**
-     * @param $message
+     * @param object $message
      * @return void
      * @throws JSONRPCException
      */
-    private static function validateResultPropertyV1($message){
+    private static function validateResultPropertyV1(object $message){
         if(!property_exists($message,'result')){
             throw new JSONRPCException('[V1] Missing "result" property in request.');
         }
     }
 
     /**
-     * @param $message
+     * @param object $message
      * @return void
      * @throws JSONRPCException
      */
-    private static function validateErrorPropertyV1($message){
+    private static function validateErrorPropertyV1(object $message){
         if(!property_exists($message,'error')){
             throw new JSONRPCException('[V1] Missing "error" property in request.');
         }
@@ -225,12 +233,12 @@ abstract class Message{
     }
 
     /**
-     * @param $message
+     * @param object $message
      * @param bool $strictId
      * @return Message
      * @throws JSONRPCException
      */
-    private static function handleMessageV1($message,bool $strictId=true){
+    private static function handleMessageV1(object $message,bool $strictId=true){
         if(self::isRequestMessage($message)){
             self::validateMethodPropertyV1($message);
             self::validateParamsPropertyV1($message);
