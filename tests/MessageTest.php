@@ -560,14 +560,14 @@ class MessageTest extends TestCase{
      * @throws JSONRPCException
      */
     public function testIsVersion2(){
-        $this->assertFalse(Message::createRequestMessageV1(123,'myMethod')->isVersion2());
-        $this->assertTrue(Message::createRequestMessageV2(123,'myMethod')->isVersion2());
+        $this->assertFalse(Message::createRequest(123,'myMethod',null,false)->isVersion2());
+        $this->assertTrue(Message::createRequest(123,'myMethod',null,true)->isVersion2());
 
-        $this->assertFalse(Message::createNotificationMessageV1('myMethod')->isVersion2());
-        $this->assertTrue(Message::createNotificationMessageV2('myMethod')->isVersion2());
+        $this->assertFalse(Message::createNotification('myMethod',null,false)->isVersion2());
+        $this->assertTrue(Message::createNotification('myMethod',null,true)->isVersion2());
 
-        $this->assertFalse(Message::createResponseMessageV1(123,'myMethod')->isVersion2());
-        $this->assertTrue(Message::createResponseMessageV2(123,'myMethod')->isVersion2());
+        $this->assertFalse(Message::createResponse(123,'myMethod',null,false)->isVersion2());
+        $this->assertTrue(Message::createResponse(123,'myMethod',null,true)->isVersion2());
     }
 
     /**

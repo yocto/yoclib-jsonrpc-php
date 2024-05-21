@@ -156,7 +156,22 @@ abstract class Message{
     }
 
     /**
-     * @param $id
+     * @param mixed $id
+     * @param string $method
+     * @param object|array|null $params
+     * @param bool $version2
+     * @return RequestMessage
+     * @throws JSONRPCException
+     */
+    public static function createRequest($id, string $method,$params=null,bool $version2=true): RequestMessage{
+        if($version2){
+            return self::createRequestMessageV2($id,$method,$params);
+        }
+        return self::createRequestMessageV1($id,$method,$params ?? []);
+    }
+
+    /**
+     * @param mixed $id
      * @param string $method
      * @param array $params
      * @return RequestMessage
@@ -170,7 +185,7 @@ abstract class Message{
     }
 
     /**
-     * @param $id
+     * @param string|numeric|null $id
      * @param string $method
      * @param object|array|null $params
      * @return RequestMessage
@@ -189,6 +204,19 @@ abstract class Message{
             throw new JSONRPCException('[V2] The "params" property in request MUST be an object, array or null.');
         }
         return new RequestMessage((object) $arr);
+    }
+
+    /**
+     * @param string $method
+     * @param object|array|null $params
+     * @param bool $version2
+     * @return NotificationMessage
+     */
+    public static function createNotification(string $method,$params=null,bool $version2=true): NotificationMessage{
+        if($version2){
+            return self::createNotificationMessageV1($method,$params);
+        }
+        return self::createNotificationMessageV1($method,$params ?? []);
     }
 
     /**
@@ -225,8 +253,23 @@ abstract class Message{
     }
 
     /**
-     * @param $id
-     * @param $result
+     * @param mixed $id
+     * @param mixed $result
+     * @param object|string|null $error
+     * @param bool $version2
+     * @return ResponseMessage
+     * @throws JSONRPCException
+     */
+    public static function createResponse($id,$result,$error,bool $version2=true): ResponseMessage{
+        if($version2){
+            return self::createResponseMessageV2($id,$result,$error);
+        }
+        return self::createResponseMessageV1($id,$result,$error);
+    }
+
+    /**
+     * @param mixed $id
+     * @param mixed $result
      * @param object|string|null $error
      * @return ResponseMessage
      * @throws JSONRPCException
@@ -246,8 +289,8 @@ abstract class Message{
     }
 
     /**
-     * @param $id
-     * @param $result
+     * @param string|numeric|null $id
+     * @param mixed $result
      * @param object|null $error
      * @return ResponseMessage
      * @throws JSONRPCException
