@@ -19,9 +19,12 @@ This yocLibrary enables your project to encode and decode JSON-RPC messages in P
 use YOCLIB\JSONRPC\JSONRPCException;
 use YOCLIB\JSONRPC\Message;
 
-$message = Message::createRequestMessageV1(123,'getInfo',['payments']); // Create request (version 1.0)
-$message = Message::createNotificationMessageV1('notificationEvent',['payed']); // Create notification (version 1.0)
-$message = Message::createResponseMessageV1(123,['payments'=>['$10.12','$23.45','$12.34']]); // Create response (version 1.0)
+// Create request
+$message = Message::createRequest(123,'getInfo',['payments']);
+// Create notification
+$message = Message::createNotification('notificationEvent',['payed']);
+// Create response
+$message = Message::createResponse(123,['payments'=>['$10.12','$23.45','$12.34']]);
 
 $object = $message->toObject();
 
