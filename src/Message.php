@@ -211,10 +211,11 @@ abstract class Message{
      * @param object|array|null $params
      * @param bool $version2
      * @return NotificationMessage
+     * @throws JSONRPCException
      */
     public static function createNotification(string $method,$params=null,bool $version2=true): NotificationMessage{
         if($version2){
-            return self::createNotificationMessageV1($method,$params);
+            return self::createNotificationMessageV2($method,$params);
         }
         return self::createNotificationMessageV1($method,$params ?? []);
     }
